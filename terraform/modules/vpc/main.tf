@@ -1,4 +1,4 @@
-# modules/vpc/main.tf - Creează rețeaua virtuală (fără NAT Gateway)
+# modules/vpc/main.tf - Creează rețeaua virtuală (cu NAT Gateway)
 
 # ===========================================
 # VPC Principal
@@ -84,7 +84,7 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
-  # Nu are rută spre internet - subnets complet izolate
+  # Inițial nu are rută spre internet
   
   tags = {
     Name = "${var.project_name}-${var.environment}-private-rt"
@@ -96,4 +96,35 @@ resource "aws_route_table_association" "private" {
   count          = length(aws_subnet.private)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
+}
+
+# ===========================================
+# NAT Gateway (pentru acces internet din subnets private)
+# ===========================================
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  
+  tags = {
+    Name = "${var.project_name}-${var.environment}-nat-eip"
+  }
+}
+
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id  # Pune NAT în primul subnet public
+  
+  tags = {
+    Name = "${var.project_name}-${var.environment}-nat"
+  }
+  
+  depends_on = [aws_internet_gateway.main]
+}
+
+# ===========================================
+# Actualizează Route Table Private să meargă prin NAT
+# ===========================================
+resource "aws_route" "private_internet" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.main.id
 }

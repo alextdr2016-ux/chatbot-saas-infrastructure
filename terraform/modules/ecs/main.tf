@@ -231,6 +231,24 @@ resource "aws_lb_listener" "http" {
 }
 
 # ===========================================
+# HTTPS Listener (Nou - adaugă aici)
+# ===========================================
+resource "aws_lb_listener" "https" {
+  count = var.acm_certificate_arn != "" ? 1 : 0
+  
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.acm_certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+# ===========================================
 # ECS Task Definition
 # ===========================================
 resource "aws_ecs_task_definition" "main" {
@@ -294,7 +312,7 @@ resource "aws_ecs_service" "main" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = var.public_subnet_ids  # Public pentru acces internet fără NAT
+    subnets          = var.private_subnet_ids  # Public pentru acces internet fără NAT
     security_groups  = [aws_security_group.ecs.id]
     assign_public_ip = true  # Necesar fără NAT Gateway
   }

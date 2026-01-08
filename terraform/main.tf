@@ -20,7 +20,7 @@ module "rds" {
   environment  = var.environment
   
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.public_subnet_ids
+  subnet_ids = module.vpc.private_subnet_ids
   
   db_name     = var.db_name
   db_username = var.db_username
@@ -50,6 +50,9 @@ module "ecs" {
 
   # OpenAI
   openai_api_key = var.openai_api_key
+
+  # HTTPS Certificate
+  acm_certificate_arn = var.acm_certificate_arn  # <-- ADAUGĂ ASTA
 
   # Container settings
   container_port = 5000

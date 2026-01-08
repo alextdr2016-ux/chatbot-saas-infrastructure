@@ -43,3 +43,11 @@ variable "openai_api_key" {
   type        = string
   sensitive   = true
 }
+
+# terraform/variables.tf - adaugă la sfârșit
+
+variable "acm_certificate_arn" {
+  description = "ARN-ul certificatului ACM pentru HTTPS"
+  type        = string
+  default     = "arn:aws:acm:eu-north-1:603630702891:certificate/e9221543-47b2-4746-849c-a8db30285e95"  # Lăsat gol pentru dev, completezi în terraform.tfvars pentru prod
+}
