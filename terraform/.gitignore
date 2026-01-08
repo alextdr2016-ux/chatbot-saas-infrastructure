@@ -1,0 +1,10 @@
+# Fișiere locale Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+
+# Fișiere sistem
+.DS_Store
+*.log
